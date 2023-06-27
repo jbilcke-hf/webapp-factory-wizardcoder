@@ -26,7 +26,7 @@
               name="draft"
               x-model="draft"
               rows="10"
-              placeholder="a pong clone made using the canvas.."
+              placeholder="A simple page to compute the bmi, using kg and meters"
               class="input input-bordered w-full rounded text-lg text-stone-500 bg-stone-300 font-mono h-48"
             ></textarea>
             <button
@@ -92,7 +92,7 @@ function humanFileSize(bytes, si=false, dp=1) {
 function app() {
   return {
     open: false,
-    draft: new URLSearchParams(window.location.search).get('prompt') || '',
+    draft: new URLSearchParams(window.location.search).get('prompt') || 'A simple page to compute the bmi, using kg and meters',
     prompt: '',
     size: 0,
     minPromptSize: 16, // if you change this, you will need to also change in src/index.mts
