@@ -19,25 +19,18 @@
             <div
               class="py-2 space-y-4 text-stone-600 transition-all delay-150 ease-in-out"
               :class="open ? 'md:text-lg lg:text-xl' : 'text-2xl'">
-              <p>A space to generate web content with WizardCoder, using an Inference Endpoint.</p>
-              <p>Feel free to duplicate and create interesting forks 🔧</p>
+              <p>A space to generate web content using WizardCoder.</p>
+              <p>It uses the Hugging Face Endpoints API for inference.</p>
             </div>
-            <textarea
-              name="draft"
-              x-model="draft"
-              rows="10"
-              placeholder="A simple page to compute the bmi, using kg and meters"
-              class="input input-bordered w-full rounded text-lg text-stone-500 bg-stone-300 font-mono h-48"
-            ></textarea>
             <button
               class="btn disabled:text-stone-400"
-              @click="open = true, prompt = draft, state = state === 'stopped' ? 'loading' : 'stopped'"
-              :class="draft.length < minPromptSize ? 'btn-neutral' : state === 'stopped' ? 'btn-accent' : 'btn-warning'"
-              :disabled="draft.length < minPromptSize"
+              @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped'"
+              :class="promptDraft.length < minPromptSize ? 'btn-neutral' : state === 'stopped' ? 'btn-accent' : 'btn-warning'"
+              :disabled="promptDraft.length < minPromptSize"
             >
-              <span x-show="draft.length < minPromptSize">Prompt too short to generate</span>
-              <span x-show="draft.length >= minPromptSize && state !== 'stopped'">Stop now</span>
-              <span x-show="draft.length >= minPromptSize && state === 'stopped'">Generate!</span>
+              <span x-show="promptDraft.length < minPromptSize">Prompt too short to generate</span>
+              <span x-show="promptDraft.length >= minPromptSize && state !== 'stopped'">Stop now</span>
+              <span x-show="promptDraft.length >= minPromptSize && state === 'stopped'">Generate!</span>
             </button>
             <span class="py-3" x-show="state === 'loading'">Waiting for the stream to begin (might take a few minutes)..</span>
             <span class="py-3" x-show="state === 'streaming'">
@@ -53,7 +46,7 @@
           class="border-none w-full h-screen"
           :src="!open
             ? '/placeholder.html'
-            : `/app?prompt=${prompt}`
+            : `/app?prompt=${encodeURIComponent(prompt)}`
           "></iframe>
       </div>
     </div>
@@ -92,7 +85,7 @@ function humanFileSize(bytes, si=false, dp=1) {
 function app() {
   return {
     open: false,
-    draft: new URLSearchParams(window.location.search).get('prompt') || 'A simple page to compute the bmi, using kg and meters',
+    promptDraft: new URLSearchParams(window.location.search).get('prompt') || 'A simple page to compute the bmi, using kg and meters',
     prompt: '',
     size: 0,
     minPromptSize: 16, // if you change this, you will need to also change in src/index.mts

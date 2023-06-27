@@ -2,12 +2,10 @@ import express from "express"
 import { HfInference } from '@huggingface/inference'
 
 import { daisy } from "./daisy.mts"
-import { alpine } from "./alpine.mts"
 
-const hf = new HfInference(process.env.HF_API_TOKEN)
+const hfi = new HfInference(process.env.HF_API_TOKEN)
 
-// TODO put here the Inference Endpoint url for WizardCoder
-const model = hf.endpoint('https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2');
+const hf = hfi.endpoint(process.env.HF_ENDPOINT_URL)
 
 // define the CSS and JS dependencies
 const css = [
@@ -25,12 +23,12 @@ const app = express()
 const port = 7860
 
 const minPromptSize = 16 // if you change this, you will need to also change in public/index.html
-const timeoutInSec = 3 * 60
+const timeoutInSec = 5 * 60
 
-console.log("timeout set to 3 minutes")
+console.log("timeout set to 5 minutes")
 
 app.use(express.static("public"))
- 
+
 const pending: {
   total: number;
   queue: string[];
@@ -59,6 +57,14 @@ app.get("/debug", (req, res) => {
 
 app.get("/app", async (req, res) => {
 
+  const model = `${req.query.model || 'OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5'}`
+
+  console.log('model:', model)
+
+  const endpoint = `${req.query.endpoint || ''}`
+
+  console.log('endpoint:', endpoint)
+
   if (`${req.query.prompt}`.length < minPromptSize) {
     res.write(`prompt too short, please enter at least ${minPromptSize} characters`)
     res.end()
@@ -86,15 +92,15 @@ app.get("/app", async (req, res) => {
 
   const finalPrompt = `# Task
 Generate the following: ${req.query.prompt}
-# Documentation
+# API Documentation for Daisy UI
 ${daisy}
 # Guidelines
-- Never repeat the instruction, instead directly write the final code within a script tag
+- Never repeat the instruction, instead directly write the final code
 - Use a color scheme consistent with the brief and theme
-- You need to use Tailwind CSS and DaisyUI for the UI, pure vanilla JS and AlpineJS for the JS.
+- You need to use Tailwind CSS
 - All the JS code will be written directly inside the page, using <script type="text/javascript">...</script>
 - You MUST use English, not Latin! (I repeat: do NOT write lorem ipsum!)
-- No need to write code comments, and try to make the code compact (short function names etc)
+- No need to write code comments, so please make the code compact (short function names etc)
 - Use a central layout by wrapping everything in a \`<div class="flex flex-col justify-center">\`
 # HTML output
 ${prefix}`
@@ -103,7 +109,7 @@ ${prefix}`
     let result = ''
     for await (const output of hf.textGenerationStream({
       inputs: finalPrompt,
-      parameters: { max_new_tokens: 1024 }
+      parameters: { max_new_tokens: 2048 }
     })) {
       if (!pending.queue.includes(id)) {
         break
