@@ -121,7 +121,7 @@ ${prefix}`
       if (result.includes('</html>')) {
         break
       }
-      if (result.includes('</enbd>') || result.includes('<|assistant|>')) {
+      if (result.includes('<|end|>') || result.includes('<|assistant|>')) {
         // it ended, but we probably don't have a valid HTML
         break
       }
@@ -129,6 +129,7 @@ ${prefix}`
 
     endRequest(id, `normal end of the LLM stream for request ${id}`)
   } catch (e) {
+    console.log(e)
     endRequest(id, `premature end of the LLM stream for request ${id} (${e})`)
   } 
 
