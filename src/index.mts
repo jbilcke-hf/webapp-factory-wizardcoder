@@ -4,8 +4,6 @@ import { HfInference } from '@huggingface/inference'
 import { daisy } from "./daisy.mts"
 
 const hfi = new HfInference(process.env.HF_API_TOKEN)
- 
-console.log('HF_ENDPOINT_URL:', process.env.HF_ENDPOINT_URL)
 const hf = hfi.endpoint(process.env.HF_ENDPOINT_URL)
 
 const app = express()
@@ -129,5 +127,5 @@ ${daisy}
   
 })
 
-app.listen(port, () => { console.log(`Open http://localhost:${port}/?prompt=a%20pong%20game%20clone%20in%20HTML,%20made%20using%20the%20canvas`) })
+app.listen(port, () => { console.log(`Open http://localhost:${port}`) })
 
