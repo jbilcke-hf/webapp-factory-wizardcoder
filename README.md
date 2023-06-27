@@ -31,7 +31,7 @@ http://localhost:7860/?prompt=a simple html canvas game where we need to feed ta
 ```bash
 nvm use
 npm i
-npm run start
+HF_API_TOKEN=******* HF_END_POINT_URL=https://*******.endpoints.huggingface.cloud npm run start
 ```
 
 ## Building and running with Docker

@@ -4,7 +4,8 @@ import { HfInference } from '@huggingface/inference'
 import { daisy } from "./daisy.mts"
 
 const hfi = new HfInference(process.env.HF_API_TOKEN)
-
+ 
+console.log('HF_ENDPOINT_URL:', process.env.HF_ENDPOINT_URL)
 const hf = hfi.endpoint(process.env.HF_ENDPOINT_URL)
 
 // define the CSS and JS dependencies
@@ -23,9 +24,9 @@ const app = express()
 const port = 7860
 
 const minPromptSize = 16 // if you change this, you will need to also change in public/index.html
-const timeoutInSec = 5 * 60
+const timeoutInSec = 30 * 60
 
-console.log("timeout set to 5 minutes")
+console.log("timeout set to 30 minutes")
 
 app.use(express.static("public"))
 
@@ -92,12 +93,12 @@ app.get("/app", async (req, res) => {
 
   const finalPrompt = `# Task
 Generate the following: ${req.query.prompt}
-# API Documentation for Daisy UI
+# API Documentation
 ${daisy}
 # Guidelines
 - Never repeat the instruction, instead directly write the final code
 - Use a color scheme consistent with the brief and theme
-- You need to use Tailwind CSS
+- You must use Tailwind CSS and Daisy UI for the CSS classes, vanilla JS and Alpine.js for the JS.
 - All the JS code will be written directly inside the page, using <script type="text/javascript">...</script>
 - You MUST use English, not Latin! (I repeat: do NOT write lorem ipsum!)
 - No need to write code comments, so please make the code compact (short function names etc)
@@ -109,7 +110,7 @@ ${prefix}`
     let result = ''
     for await (const output of hf.textGenerationStream({
       inputs: finalPrompt,
-      parameters: { max_new_tokens: 2048 }
+      parameters: { max_new_tokens: 1024 }
     })) {
       if (!pending.queue.includes(id)) {
         break
@@ -118,6 +119,10 @@ ${prefix}`
       process.stdout.write(output.token.text)
       res.write(output.token.text)
       if (result.includes('</html>')) {
+        break
+      }
+      if (result.includes('</enbd>') || result.includes('<|assistant|>')) {
+        // it ended, but we probably don't have a valid HTML
         break
       }
     }
