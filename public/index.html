@@ -20,7 +20,7 @@
               class="py-2 space-y-4 text-stone-600 transition-all delay-150 ease-in-out"
               :class="open ? 'md:text-lg lg:text-xl' : 'text-2xl'">
               <p>A space to generate web content using WizardCoder.</p>
-              <p>It uses the Hugging Face Endpoints API for inference.</p>
+              <p>Running on 🤗 Inference Endpoints.</p>
             </div>
             <textarea
               name="promptDraft"
@@ -41,7 +41,7 @@
             </button>
             <span class="py-3" x-show="state === 'loading'">Waiting for the stream to begin (might take a few minutes)..</span>
             <span class="py-3" x-show="state === 'streaming'">
-              Streamed <span x-text="humanFileSize(size, true, 2)"></span> so far<br/> (hang on, this may take a while ☕)</span>
+              Streamed <span x-text="humanFileSize(size, true, 2)"></span> so far..<br/>Note: this version generates up to 1024 tokens.</span>
           </div>
         </div>
       </div>
