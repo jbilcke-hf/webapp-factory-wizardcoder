@@ -10,7 +10,8 @@
     <div class="flex flex-col md:flex-row" x-data="app()" x-init="init()">
       <div
         class="hero md:h-screen bg-stone-100 transition-[width] delay-150 ease-in-out"
-        :class="open ? 'w-full md:w-2/6' : 'w-full md:w-6/6'">
+        :class="open ? 'w-full md:w-2/6' : 'w-full md:w-6/6'"
+      >
         <div class="hero-content text-center">
           <div class="flex flex-col w-full md:max-w-xl space-y-3 md:space-y-6">
             <h1
@@ -18,12 +19,15 @@
               :class="open
               ? 'text-2xl md:text-3xl lg:text-4xl'
               : 'text-2xl md:text-3xl lg:text-6xl'"
-            >Webapp Factory 🏭</h1>
+            >
+              Webapp Factory 🏭
+            </h1>
             <div
               class="py-1 md:py-2 space-y-2 md:space-y-4 text-stone-600 transition-all delay-150 ease-in-out"
               :class="open
               ? 'text-lg md:text-xl lg:text-2xl'
-              : 'text-lg md:text-xl lg:text-2xl'">
+              : 'text-lg md:text-xl lg:text-2xl'"
+            >
               <p>A space to generate web content using WizardCoder.</p>
               <p>Running on 🤗 Inference Endpoints.</p>
             </div>
@@ -32,10 +36,7 @@
               x-model="promptDraft"
               rows="10"
               placeholder="A simple page to compute the BMI (use SI units)"
-              class="input input-bordered w-full rounded text-stone-500 bg-stone-300 font-mono
-              text-md md:text-lg
-              h-24 md:h-48
-              "
+              class="input input-bordered w-full rounded text-stone-500 bg-stone-300 font-mono text-md md:text-lg h-24 md:h-48"
             ></textarea>
             <button
               class="btn disabled:text-stone-400"
@@ -47,99 +48,106 @@
               <span x-show="promptDraft.length >= minPromptSize && state !== 'stopped'">Stop now</span>
               <span x-show="promptDraft.length >= minPromptSize && state === 'stopped'">Generate!</span>
             </button>
-            <span class="py-3" x-show="state === 'loading'">Waiting for the stream to begin (might take a few minutes)..</span>
+            <span class="py-3" x-show="state === 'loading'"
+              >Waiting for the stream to begin (might take a few minutes)..</span
+            >
             <span class="py-3" x-show="state === 'streaming'">
-              Streamed <span x-text="humanFileSize(size, true, 2)"></span> so far..<br/>Note: this version generates up to 1024 tokens.</span>
+              Streamed <span x-text="humanFileSize(size, true, 2)"></span> so far..<br />Note: this version generates up
+              to 1024 tokens.</span
+            >
           </div>
         </div>
       </div>
       <div
         class="flex transition-[width] delay-150 ease-in-out md:h-screen"
-        :class="open ? 'w-full md:w-4/6' : 'w-full md:w-0'">
+        :class="open ? 'w-full md:w-4/6' : 'w-full md:w-0'"
+      >
         <iframe
           id="iframe"
-          class="border-none w-full md:h-screen"
+          class="border-none w-full md:min-h-screen p-4 md:p-8"
           :src="!open
             ? '/placeholder.html'
             : `/app?prompt=${encodeURIComponent(prompt)}`
-          "></iframe>
+          "
+        ></iframe>
       </div>
     </div>
     <script>
       /**
- * Format bytes as human-readable text.
- * 
- * @param bytes Number of bytes.
- * @param si True to use metric (SI) units, aka powers of 1000. False to use 
- *           binary (IEC), aka powers of 1024.
- * @param dp Number of decimal places to display.
- * 
- * @return Formatted string.
- */
-function humanFileSize(bytes, si=false, dp=1) {
-  const thresh = si ? 1000 : 1024;
+       * Format bytes as human-readable text.
+       *
+       * @param bytes Number of bytes.
+       * @param si True to use metric (SI) units, aka powers of 1000. False to use
+       *           binary (IEC), aka powers of 1024.
+       * @param dp Number of decimal places to display.
+       *
+       * @return Formatted string.
+       */
+      function humanFileSize(bytes, si = false, dp = 1) {
+        const thresh = si ? 1000 : 1024;
 
-  if (Math.abs(bytes) < thresh) {
-    return bytes + ' B';
-  }
-
-  const units = si 
-    ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] 
-    : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-  let u = -1;
-  const r = 10**dp;
-
-  do {
-    bytes /= thresh;
-    ++u;
-  } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
-
-
-  return bytes.toFixed(dp) + ' ' + units[u];
-}
-function app() {
-  return {
-    open: false,
-    promptDraft: new URLSearchParams(window.location.search).get('prompt') || 'A simple page to compute the BMI (use SI units)',
-    prompt: '',
-    size: 0,
-    minPromptSize: 16, // if you change this, you will need to also change in src/index.mts
-    timeoutInSec: 10, // time before we determine something went wrong
-    state: 'stopped',
-    lastTokenAt: + new Date(),
-    init() {
-      setInterval(() => {
-        if (this.state === 'stopped') {
-          this.lastTokenAt = +new Date()
-          return
+        if (Math.abs(bytes) < thresh) {
+          return bytes + " B";
         }
-        const html = document?.getElementById('iframe')?.contentWindow?.document?.documentElement?.outerHTML
-        const size = Number(html?.length) // count how many characters we have generated
-  
-        if (isNaN(size) || !isFinite(size)) {
-          this.size = 0
-          this.state = 'loading'
-          return
-        }
-        this.size = new Blob([html]).size
-        this.state = 'streaming'
-        const lastTokenAt = + new Date()
-        const elapsed = (lastTokenAt - this.lastTokenAt) / 1000
-        this.lastTokenAt = lastTokenAt
-        if (elapsed > this.timeoutInSec) {
-          console.log(`Something went wrong, it too more than ${this.timeoutInSec} seconds to generate a token.`)
-          this.state = 'stopped'
-          return
-        }
-        if (html.includes('</html>')) {
-          // console.log('We reached the natural end of the stream, it seems.')
-          // this.state === 'stopped'
-          return
-        }
-      }, 100)
-    },
-  }
-}
+
+        const units = si
+          ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+          : ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+        let u = -1;
+        const r = 10 ** dp;
+
+        do {
+          bytes /= thresh;
+          ++u;
+        } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
+
+        return bytes.toFixed(dp) + " " + units[u];
+      }
+      function app() {
+        return {
+          open: false,
+          promptDraft:
+            new URLSearchParams(window.location.search).get("prompt") ||
+            "A simple page to compute the BMI (use SI units)",
+          prompt: "",
+          size: 0,
+          minPromptSize: 16, // if you change this, you will need to also change in src/index.mts
+          timeoutInSec: 10, // time before we determine something went wrong
+          state: "stopped",
+          lastTokenAt: +new Date(),
+          init() {
+            setInterval(() => {
+              if (this.state === "stopped") {
+                this.lastTokenAt = +new Date();
+                return;
+              }
+              const html = document?.getElementById("iframe")?.contentWindow?.document?.documentElement?.outerHTML;
+              const size = Number(html?.length); // count how many characters we have generated
+
+              if (isNaN(size) || !isFinite(size)) {
+                this.size = 0;
+                this.state = "loading";
+                return;
+              }
+              this.size = new Blob([html]).size;
+              this.state = "streaming";
+              const lastTokenAt = +new Date();
+              const elapsed = (lastTokenAt - this.lastTokenAt) / 1000;
+              this.lastTokenAt = lastTokenAt;
+              if (elapsed > this.timeoutInSec) {
+                console.log(`Something went wrong, it too more than ${this.timeoutInSec} seconds to generate a token.`);
+                this.state = "stopped";
+                return;
+              }
+              if (html.includes("</html>")) {
+                // console.log('We reached the natural end of the stream, it seems.')
+                // this.state === 'stopped'
+                return;
+              }
+            }, 100);
+          },
+        };
+      }
     </script>
   </body>
 </html>
