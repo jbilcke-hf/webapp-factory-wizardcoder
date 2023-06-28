@@ -73,12 +73,10 @@ ${daisy}
 # Guidelines
 - Never repeat the instructions, instead write the final code
 - To generate images use the /image endpoint: <img src="/image?prompt=caption of the photo" />
-- Be descriptive for photo caption, use at last 10 words.
-- **NEVER** add more than 3 or 4 images
-- Never write lists that are too long
+- Only generate a few images, and be descriptive for photo caption, use at last 10 words.
 - You must use TailwindCSS utility classes (Tailwind is already injected in the page).
-- If needed, embed new custom JS code using <script>...</script>
-- You MUST use English, not Latin! Write in English! Never write "lorem ipsum.."
+- Write application logic inside a JS <script></script> tag
+- This is not a demo app, so you MUST use English, no Latin! Write in English! 
 - Use a central layout to wrap everything in a <div class='flex flex-col items-center'>
 # Output
 <html>
