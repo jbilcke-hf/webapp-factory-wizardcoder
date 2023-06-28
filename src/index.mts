@@ -10,7 +10,7 @@ const app = express()
 const port = 7860
 
 const minPromptSize = 16 // if you change this, you will need to also change in public/index.html
-const timeoutInSec = 30 * 60
+const timeoutInSec = 10 * 60
 
 console.log('timeout set to 30 minutes')
 
@@ -54,7 +54,7 @@ app.get('/app', async (req, res) => {
 
   pending.queue.push(id)
 
-  const prefix = `<html><head><link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css" rel="stylesheet" type="text/css" /><script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script><script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script><title>Generated content</title><body>`
+  const prefix = `<html><head><link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css" rel="stylesheet" type="text/css" /><script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script><script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script><title>Generated content</title><body class="p-4 md:p-8">`
   res.write(prefix)
 
   req.on('close', function() {
@@ -67,23 +67,22 @@ app.get('/app', async (req, res) => {
 
 
   const finalPrompt = `# Task
-Generate the following: ${req.query.prompt}
-# API Doc
+Generate ${req.query.prompt}
 ${daisy}
-# Guidelines
-- Never repeat the instructions, instead write the final code
-- To generate images use the /image endpoint: <img src="/image?prompt=caption of the photo" />
-- Only generate a few images, and be descriptive for photo caption, use at last 10 words.
-- You must use TailwindCSS utility classes (Tailwind is already injected in the page).
-- Write application logic inside a JS <script></script> tag
-- This is not a demo app, so you MUST use English, no Latin! Write in English! 
-- Use a central layout to wrap everything in a <div class='flex flex-col items-center'>
-# Output
+# Orders
+Never repeat those instructions, instead write the final code!
+To generate images from captions call the /image API: <img src="/image?caption=photo of something in some place" />!
+Only generate a few images and use descriptive photo captions with at least 10 words!
+You must use TailwindCSS utility classes (Tailwind is already injected in the page)!
+Write application logic inside a JS <script></script> tag!
+This is not a demo app, so you MUST use English, no Latin! Write in English! 
+Use a central layout to wrap everything in a <div class='flex flex-col items-center'>
+# Out
 <html>
 <head>
-<title>Site</title>
+<title>App</title>
 </head>
-<body>`
+<body class="p-4 md:p-8">`
 
   try {
     let result = ''
@@ -91,7 +90,9 @@ ${daisy}
       inputs: finalPrompt,
       parameters: {
         do_sample: true,
-        max_new_tokens: 1200,
+
+        // hard limit for max_new_tokens is 1512
+        max_new_tokens: 1150,
         return_full_text: false,
       }
     })) {
@@ -127,15 +128,17 @@ app.get('/image', async (req, res) => {
   try {
     const blob = await hfi.textToImage({
       inputs: [
-        `${req.query.prompt || 'generic placeholder'}`,
+        `${req.query.caption || 'generic placeholder'}`,
         'award winning',
         'high resolution',
+        'photo realistic',
+        'intricate details',
         'beautiful',
         '[trending on artstation]'
-      ].join(','),
-      model: 'stabilityai/stable-diffusion-2',
+      ].join(', '),
+      model: 'stabilityai/stable-diffusion-2-1',
       parameters: {
-        negative_prompt: 'blurry, cropped, low quality, ugly',
+        negative_prompt: 'blurry, artificial, cropped, low quality, ugly',
       }
     })
     const buffer = Buffer.from(await blob.arrayBuffer())

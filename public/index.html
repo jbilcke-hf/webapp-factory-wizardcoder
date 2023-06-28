@@ -42,11 +42,11 @@
               Examples:
 
               <a href="/?prompt=a simple page to compute the BMI using metric units" class="text-bold underline">compute my BMI</a>,
-              <a href="/?prompt=app listing various animals from the savanna, with their photos" class="text-bold underline">photos of animals</a>
+              <a href="/?prompt=app listing various types of llamas with their photos" class="text-bold underline">photos of llamas</a>
             </p>
             <button
               class="btn disabled:text-stone-400"
-              @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped'"
+              @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped', stopGeneration()"
               :class="promptDraft.length < minPromptSize ? 'btn-neutral' : state === 'stopped' ? 'btn-accent' : 'btn-warning'"
               :disabled="promptDraft.length < minPromptSize"
             >
@@ -61,30 +61,39 @@
                   WizardCoder-15B-1.0
                 </a>
               </p>
-              <p>Powered by 🤗 <a href="https://huggingface.co/inference-endpoints" class="underline" target="_blank">Inference Endpoints</a>.</p>
+              <p>Powered by 🤗 <a href="https://huggingface.co/inference-endpoints" class="underline" target="_blank">Inference Endpoints</a></p>
               <p class="py-3 text-stone-700" x-show="state === 'loading'">
                 Waiting for the stream to begin (might take a few minutes)..
               </p>
               <p class="py-3 text-stone-700" x-show="state === 'streaming'">
-                Streamed <span x-text="humanFileSize(size, true, 2)"></span> so far..<br />Note: this version generates up
-                to 1200 tokens.
+                Content size: <span x-text="humanFileSize(size, true, 2)"></span><br />Note: this version generates up
+                to 1150 tokens.
               </p>
             </div>
           </div>
         </div>
       </div>
       <div
-        class="flex transition-[width] delay-150 ease-in-out md:h-screen"
+        class="flex flex-col transition-[width] delay-150 ease-in-out md:h-screen"
         :class="open ? 'w-full md:w-4/6' : 'w-full md:w-0'"
       >
         <iframe
           id="iframe"
-          class="border-none w-full md:min-h-screen p-4 md:p-8"
+          class="border-none w-full md:min-h-screen"
           :src="!open
             ? '/placeholder.html'
             : `/app?prompt=${encodeURIComponent(prompt)}`
           "
         ></iframe>
+
+        <div
+          x-show="state !== 'stopped'"
+          class="flex w-full -mt-20 items-end justify-center pointer-events-none">
+          <div class="flex flex-row py-3 px-8 text-center bg-stone-200 text-stone-600 rounded-md shadow-md">
+            <div class="animate-bounce duration-150 mr-1">🤖</div>
+            <div>Generating your app..</div>
+          </div>
+        </div>
       </div>
     </div>
     <script>
@@ -118,6 +127,11 @@
 
         return bytes.toFixed(dp) + " " + units[u];
       }
+
+      function stopGeneration() {
+        document?.getElementById("iframe")?.stop();
+      }
+
       function app() {
         return {
           open: false,
@@ -126,7 +140,7 @@
           prompt: "",
           size: 0,
           minPromptSize: 16, // if you change this, you will need to also change in src/index.mts
-          timeoutInSec: 10, // time before we determine something went wrong
+          timeoutInSec: 5, // time before we determine something went wrong
           state: "stopped",
           lastTokenAt: +new Date(),
           init() {
@@ -143,20 +157,24 @@
                 this.state = "loading";
                 return;
               }
-              this.size = new Blob([html]).size;
+
               this.state = "streaming";
-              const lastTokenAt = +new Date();
-              const elapsed = (lastTokenAt - this.lastTokenAt) / 1000;
-              this.lastTokenAt = lastTokenAt;
-              if (elapsed > this.timeoutInSec) {
-                console.log(`Something went wrong, it took more than ${this.timeoutInSec} seconds to generate a token.`);
-                this.state = "stopped";
-                return;
+
+              const now = +new Date();
+              const newSize = new Blob([html]).size;
+              const hasChanged = newSize !== this.size;
+
+              if (hasChanged) {
+                this.lastTokenAt = now;
               }
-              if (html.includes("</html>")) {
-                // console.log('We reached the natural end of the stream, it seems.')
-                // this.state === 'stopped'
-                return;
+
+              this.size = newSize;
+     
+              const timeSinceLastUpdate = (now - this.lastTokenAt) / 1000;
+
+              if (timeSinceLastUpdate > this.timeoutInSec) {
+                console.log(`no changed detected for the past ${this.timeoutInSec} seconds -> considering we're done`);
+                this.state = "stopped";
               }
             }, 100);
           },
