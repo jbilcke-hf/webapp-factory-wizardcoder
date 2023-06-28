@@ -46,7 +46,7 @@
             </p>
             <button
               class="btn disabled:text-stone-400"
-              @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped', state === 'streaming' ? stopGeneration(state) : true"
+              @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped', state === 'streaming' ? stopGeneration() : true"
               :class="promptDraft.length < minPromptSize ? 'btn-neutral' : state === 'stopped' ? 'btn-accent' : 'btn-warning'"
               :disabled="promptDraft.length < minPromptSize"
             >
