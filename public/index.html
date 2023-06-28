@@ -35,8 +35,8 @@
               name="promptDraft"
               x-model="promptDraft"
               rows="10"
-              placeholder="A simple page to compute the BMI (use SI units)"
-              class="input input-bordered w-full rounded text-stone-500 bg-stone-300 font-mono text-md md:text-lg h-24 md:h-48"
+              placeholder="Describe your web app"
+              class="input input-bordered w-full rounded text-stone-600 bg-stone-100 font-mono text-md md:text-lg h-24 md:h-48"
             ></textarea>
             <button
               class="btn disabled:text-stone-400"
@@ -107,11 +107,12 @@
         return {
           open: false,
           examples: {
-            'page about dolphins': 'a page about dolphins, with text and a few pictures'
-         },
+            "compute the BMI": "a simple page to compute the BMI (use SI units)",
+            "animals": "app listing various animals",
+            // "page about dolphins": "a page about dolphins, with text and a few pictures"
+          },
           promptDraft:
-            new URLSearchParams(window.location.search).get("prompt") ||
-            "A simple page to compute the BMI (use SI units)",
+            new URLSearchParams(window.location.search).get("prompt"),
           prompt: "",
           size: 0,
           minPromptSize: 16, // if you change this, you will need to also change in src/index.mts
@@ -138,7 +139,7 @@
               const elapsed = (lastTokenAt - this.lastTokenAt) / 1000;
               this.lastTokenAt = lastTokenAt;
               if (elapsed > this.timeoutInSec) {
-                console.log(`Something went wrong, it too more than ${this.timeoutInSec} seconds to generate a token.`);
+                console.log(`Something went wrong, it took more than ${this.timeoutInSec} seconds to generate a token.`);
                 this.state = "stopped";
                 return;
               }

@@ -54,7 +54,7 @@ app.get('/app', async (req, res) => {
 
   pending.queue.push(id)
 
-  const prefix = `<html><head><link href='https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css' rel='stylesheet' type='text/css' /><script defer src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'></script><script src='https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp'></script><title>Generated content</title><body`
+  const prefix = `<html><head><link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css" rel="stylesheet" type="text/css" /><script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script><script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script><title>Generated content</title><body>`
   res.write(prefix)
 
   req.on('close', function() {
@@ -68,27 +68,34 @@ app.get('/app', async (req, res) => {
 
   const finalPrompt = `# Task
 Generate the following: ${req.query.prompt}
-# API Documentation
+# API Doc
 ${daisy}
 # Guidelines
-- Never repeat the instruction, instead directly write the final code
-- Use a color scheme consistent with the brief and theme
-- To generate all your images, import from from this route: "/image?prompt=<description or caption of an image, photo or illustration>"
-- please be descriptive for the prompt, eg describe the scene in a few words (textures, characters, materials, camera type etc)
-- do not add more than 3 or 4 images
-- You must use Tailwind CSS and Daisy UI for the CSS classes, vanilla JS and Alpine.js for the JS.
-- All the JS code will be written directly inside the page, using <script type='text/javascript'>...</script>
-- You MUST use English, not Latin! (I repeat: do NOT write lorem ipsum!)
-- No need to write code comments, so please make the code compact (short function names etc)
-- Use a central layout by wrapping everything in a \`<div class='flex flex-col items-center'>\`
-# HTML output
-<html><head></head><body`
+- Never repeat the instructions, instead write the final code
+- To generate images use the /image endpoint: <img src="/image?prompt=caption of the photo" />
+- Be descriptive for photo caption, use at last 10 words.
+- **NEVER** add more than 3 or 4 images
+- Never write lists that are too long
+- You must use TailwindCSS utility classes (Tailwind is already injected in the page).
+- If needed, embed new custom JS code using <script>...</script>
+- You MUST use English, not Latin! Write in English! Never write "lorem ipsum.."
+- Use a central layout to wrap everything in a <div class='flex flex-col items-center'>
+# Output
+<html>
+<head>
+<title>Site</title>
+</head>
+<body>`
 
   try {
     let result = ''
     for await (const output of hf.textGenerationStream({
       inputs: finalPrompt,
-      parameters: { max_new_tokens: 1024 }
+      parameters: {
+        do_sample: true,
+        max_new_tokens: 1200,
+        return_full_text: false,
+      }
     })) {
       if (!pending.queue.includes(id)) {
         break
