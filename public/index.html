@@ -25,11 +25,11 @@
             <div
               class="py-1 md:py-2 space-y-2 md:space-y-4 text-stone-600 transition-all delay-150 ease-in-out"
               :class="open
-              ? 'text-lg md:text-xl lg:text-2xl'
-              : 'text-lg md:text-xl lg:text-2xl'"
+              ? 'text-lg lg:text-xl'
+              : 'text-lg lg:text-xl'"
             >
-              <p>A space to generate tiny web apps. Try running the examples multiple times!</p>
-              <p>Running on 🤗 Inference Endpoints.</p>
+              <p>A space to generate tiny web apps.</p>
+              <p>Try running the examples multiple times!</p>
             </div>
             <textarea
               name="promptDraft"
@@ -61,6 +61,7 @@
                   WizardCoder-15B-1.0
                 </a>
               </p>
+              <p>Powered by 🤗 <a href="https://huggingface.co/inference-endpoints" class="underline" target="_blank">Inference Endpoints</a>.</p>
               <p class="py-3 text-stone-700" x-show="state === 'loading'">
                 Waiting for the stream to begin (might take a few minutes)..
               </p>
