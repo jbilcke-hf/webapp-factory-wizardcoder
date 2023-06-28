@@ -36,12 +36,13 @@
               x-model="promptDraft"
               rows="10"
               placeholder="Describe your web app"
-              class="input input-bordered w-full rounded text-stone-600 bg-stone-100 font-mono text-md md:text-lg h-24 md:h-48"
+              class="input input-bordered w-full rounded text-stone-800 bg-stone-100 font-mono text-md md:text-lg h-24 md:h-48"
             ></textarea>
             <button
               class="btn disabled:text-stone-400"
               @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped'"
               :class="promptDraft.length < minPromptSize ? 'btn-neutral' : state === 'stopped' ? 'btn-accent' : 'btn-warning'"
+              :disabled="promptDraft.length < minPromptSize"
             >
               <span x-show="promptDraft.length < minPromptSize">Prompt too short to generate</span>
               <span x-show="promptDraft.length >= minPromptSize && state !== 'stopped'">Stop now</span>
