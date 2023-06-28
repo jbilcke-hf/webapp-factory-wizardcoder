@@ -28,7 +28,7 @@
               ? 'text-lg md:text-xl lg:text-2xl'
               : 'text-lg md:text-xl lg:text-2xl'"
             >
-              <p>A space to generate web content using WizardCoder.</p>
+              <p>A space to generate tiny web apps.</p>
               <p>Running on 🤗 Inference Endpoints.</p>
             </div>
             <textarea
@@ -38,6 +38,12 @@
               placeholder="Describe your web app"
               class="input input-bordered w-full rounded text-stone-800 bg-stone-100 font-mono text-md md:text-lg h-24 md:h-48"
             ></textarea>
+            <p class="py-3 text-stone-700 text-italic">
+              Examples:
+
+              <a href="/?prompt=a simple page to compute the BMI using metric units" class="text-bold underline">compute my BMI</a>,
+              <a href="/?prompt=app listing various animals from the savanna, with their photos" class="text-bold underline">photos of animals</a>
+            </p>
             <button
               class="btn disabled:text-stone-400"
               @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped'"
@@ -114,11 +120,6 @@
       function app() {
         return {
           open: false,
-          examples: {
-            "compute the BMI": "a simple page to compute the BMI (use SI units)",
-            "animals": "app listing various animals",
-            // "page about dolphins": "a page about dolphins, with text and a few pictures"
-          },
           promptDraft:
             new URLSearchParams(window.location.search).get("prompt") || '',
           prompt: "",
