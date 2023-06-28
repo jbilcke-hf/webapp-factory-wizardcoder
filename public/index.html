@@ -46,7 +46,7 @@
             </p>
             <button
               class="btn disabled:text-stone-400"
-              @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped', stopGeneration()"
+              @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped', state === 'streaming' ? stopGeneration(state) : true"
               :class="promptDraft.length < minPromptSize ? 'btn-neutral' : state === 'stopped' ? 'btn-accent' : 'btn-warning'"
               :disabled="promptDraft.length < minPromptSize"
             >
@@ -173,7 +173,7 @@
               const timeSinceLastUpdate = (now - this.lastTokenAt) / 1000;
 
               if (timeSinceLastUpdate > this.timeoutInSec) {
-                console.log(`no changed detected for the past ${this.timeoutInSec} seconds -> considering we're done`);
+                console.log(`no changes detected for the past ${this.timeoutInSec} seconds -> considering we're done`);
                 this.state = "stopped";
               }
             }, 100);
