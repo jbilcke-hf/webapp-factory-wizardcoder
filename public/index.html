@@ -9,8 +9,8 @@
   <body>
     <div class="flex flex-col md:flex-row" x-data="app()" x-init="init()">
       <div
-        class="hero md:h-screen bg-stone-100 transition-[width] delay-150 ease-in-out"
-        :class="open ? 'w-full md:w-2/6' : 'w-full md:w-6/6'"
+        class="md:h-screen bg-stone-100 transition-[width] delay-150 ease-in-out"
+        :class="open ? 'w-full md:w-2/6' : 'md:hero w-full md:w-6/6'"
       >
         <div class="hero-content text-center">
           <div class="flex flex-col w-full md:max-w-xl space-y-3 md:space-y-6">
