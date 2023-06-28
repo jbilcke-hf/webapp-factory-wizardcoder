@@ -1,7 +1,12 @@
-import express from "express"
+import { pipeline } from 'stream'
+import { promisify } from 'util'
+
+import express from 'express'
 import { HfInference } from '@huggingface/inference'
 
-import { daisy } from "./daisy.mts"
+import { daisy } from './daisy.mts'
+
+const pipe = promisify(pipeline)
 
 const hfi = new HfInference(process.env.HF_API_TOKEN)
 const hf = hfi.endpoint(process.env.HF_ENDPOINT_URL)
@@ -12,9 +17,9 @@ const port = 7860
 const minPromptSize = 16 // if you change this, you will need to also change in public/index.html
 const timeoutInSec = 30 * 60
 
-console.log("timeout set to 30 minutes")
+console.log('timeout set to 30 minutes')
 
-app.use(express.static("public"))
+app.use(express.static('public'))
 
 const pending: {
   total: number;
@@ -33,7 +38,7 @@ const endRequest = (id: string, reason: string) => {
   console.log(`request ${id} ended (${reason})`)
 }
 
-app.get("/debug", (req, res) => {
+app.get('/debug', (req, res) => {
   res.write(JSON.stringify({
     nbTotal: pending.total,
     nbPending: pending.queue.length,
@@ -42,16 +47,7 @@ app.get("/debug", (req, res) => {
   res.end()
 })
 
-app.get("/app", async (req, res) => {
-
-  const model = `${req.query.model || 'OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5'}`
-
-  console.log('model:', model)
-
-  const endpoint = `${req.query.endpoint || ''}`
-
-  console.log('endpoint:', endpoint)
-
+app.get('/app', async (req, res) => {
   if (`${req.query.prompt}`.length < minPromptSize) {
     res.write(`prompt too short, please enter at least ${minPromptSize} characters`)
     res.end()
@@ -63,15 +59,13 @@ app.get("/app", async (req, res) => {
 
   pending.queue.push(id)
 
-  const prefix = `<html><head><link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css" rel="stylesheet" type="text/css" /><script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script><script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script><title>Generated content</title><body`
+  const prefix = `<html><head><link href='https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css' rel='stylesheet' type='text/css' /><script defer src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'></script><script src='https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp'></script><title>Generated content</title><body`
   res.write(prefix)
 
-  req.on("close", function() {
-    // console.log("browser asked to close the stream for some reason.. let's ignore!")
-    endRequest(id, "browser asked to end the connection")
+  req.on('close', function() {
+    endRequest(id, 'browser asked to end the connection')
   })
 
-  // for testing we kill after some delay
   setTimeout(() => {
     endRequest(id, `timed out after ${timeoutInSec}s`)
   }, timeoutInSec * 1000)
@@ -84,11 +78,13 @@ ${daisy}
 # Guidelines
 - Never repeat the instruction, instead directly write the final code
 - Use a color scheme consistent with the brief and theme
+- To generate all your images, import from from this route: "/image?prompt=<description or caption of an image, photo or illustration>"
+- please be descriptive for the prompt, eg describe the scene in a few words (textures, characters, materials, camera type etc)
 - You must use Tailwind CSS and Daisy UI for the CSS classes, vanilla JS and Alpine.js for the JS.
-- All the JS code will be written directly inside the page, using <script type="text/javascript">...</script>
+- All the JS code will be written directly inside the page, using <script type='text/javascript'>...</script>
 - You MUST use English, not Latin! (I repeat: do NOT write lorem ipsum!)
 - No need to write code comments, so please make the code compact (short function names etc)
-- Use a central layout by wrapping everything in a \`<div class="flex flex-col items-center">\`
+- Use a central layout by wrapping everything in a \`<div class='flex flex-col items-center'>\`
 # HTML output
 <html><head></head><body`
 
@@ -108,7 +104,6 @@ ${daisy}
         break
       }
       if (result.includes('<|end|>') || result.includes('<|assistant|>')) {
-        // it ended, but we probably don't have a valid HTML
         break
       }
     }
@@ -125,6 +120,31 @@ ${daisy}
     console.log(`couldn't end the HTTP stream for request ${id} (${err})`)
   }
   
+})
+
+app.get('/image', async (req, res) => {
+  try {
+    const blob = await hfi.textToImage({
+      inputs: [
+        `${req.query.prompt || 'generic placeholder'}`,
+        'award winning',
+        'high resolution',
+        'beautiful',
+        '[trending on artstation]'
+      ].join(','),
+      model: 'stabilityai/stable-diffusion-2',
+      parameters: {
+        negative_prompt: 'blurry, cropped, low quality, ugly',
+      }
+    })
+    const buffer = Buffer.from(await blob.arrayBuffer())
+    res.setHeader('Content-Type', blob.type)
+    res.setHeader('Content-Length', buffer.length)
+    res.end(buffer)
+  } catch (err) {
+    console.error(`Error when generating the image: ${err.message}`);
+    res.status(500).json({ error: 'An error occurred when trying to generate the image' });
+  }
 })
 
 app.listen(port, () => { console.log(`Open http://localhost:${port}`) })
