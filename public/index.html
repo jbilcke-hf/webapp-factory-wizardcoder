@@ -9,8 +9,8 @@
   <body>
     <div class="flex flex-col md:flex-row" x-data="app()" x-init="init()">
       <div
-        class="md:h-screen bg-stone-100 transition-[width] delay-150 ease-in-out"
-        :class="open ? 'w-full md:w-2/6' : 'md:hero w-full md:w-6/6'"
+        class="hero md:h-screen bg-stone-100 transition-[width] delay-150 ease-in-out"
+        :class="open ? 'w-full md:w-2/6' : 'w-full md:w-6/6'"
       >
         <div class="hero-content text-center">
           <div class="flex flex-col w-full md:max-w-xl space-y-3 md:space-y-6">
@@ -23,7 +23,7 @@
               Webapp Factory 🏭
             </h1>
             <div
-              class="py-1 md:py-2 space-y-2 md:space-y-4 text-stone-600 transition-all delay-150 ease-in-out"
+              class="py-1 md:py-2 space-y-2 md:space-y-3 text-stone-600 transition-all delay-150 ease-in-out"
               :class="open
               ? 'text-lg lg:text-xl'
               : 'text-lg lg:text-xl'"
@@ -54,7 +54,7 @@
               <span x-show="promptDraft.length >= minPromptSize && state !== 'stopped'">Stop now</span>
               <span x-show="promptDraft.length >= minPromptSize && state === 'stopped'">Generate!</span>
             </button>
-            <div class="flex flex-col py-3 text-stone-700">
+            <div class="flex flex-col text-stone-700">
               <p class="py-3 text-stone-700">
                 Model used:
                 <a href="https://huggingface.co/WizardLM/WizardCoder-15B-V1.0" class="underline" target="_blank">
