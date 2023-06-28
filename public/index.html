@@ -3,7 +3,7 @@
     <title>Webapp Factory 🏭</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css" rel="stylesheet" type="text/css" />
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
   </head>
   <body>
@@ -42,19 +42,26 @@
               class="btn disabled:text-stone-400"
               @click="open = true, prompt = promptDraft, state = state === 'stopped' ? 'loading' : 'stopped'"
               :class="promptDraft.length < minPromptSize ? 'btn-neutral' : state === 'stopped' ? 'btn-accent' : 'btn-warning'"
-              :disabled="promptDraft.length < minPromptSize"
             >
               <span x-show="promptDraft.length < minPromptSize">Prompt too short to generate</span>
               <span x-show="promptDraft.length >= minPromptSize && state !== 'stopped'">Stop now</span>
               <span x-show="promptDraft.length >= minPromptSize && state === 'stopped'">Generate!</span>
             </button>
-            <span class="py-3" x-show="state === 'loading'"
-              >Waiting for the stream to begin (might take a few minutes)..</span
-            >
-            <span class="py-3" x-show="state === 'streaming'">
-              Streamed <span x-text="humanFileSize(size, true, 2)"></span> so far..<br />Note: this version generates up
-              to 1200 tokens.</span
-            >
+            <div class="flex flex-col py-3 text-stone-700">
+              <p class="py-3 text-stone-700">
+                Model used:
+                <a href="https://huggingface.co/WizardLM/WizardCoder-15B-V1.0" class="underline" target="_blank">
+                  WizardCoder-15B-1.0
+                </a>
+              </p>
+              <p class="py-3 text-stone-700" x-show="state === 'loading'">
+                Waiting for the stream to begin (might take a few minutes)..
+              </p>
+              <p class="py-3 text-stone-700" x-show="state === 'streaming'">
+                Streamed <span x-text="humanFileSize(size, true, 2)"></span> so far..<br />Note: this version generates up
+                to 1200 tokens.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -112,7 +119,7 @@
             // "page about dolphins": "a page about dolphins, with text and a few pictures"
           },
           promptDraft:
-            new URLSearchParams(window.location.search).get("prompt"),
+            new URLSearchParams(window.location.search).get("prompt") || '',
           prompt: "",
           size: 0,
           minPromptSize: 16, // if you change this, you will need to also change in src/index.mts
