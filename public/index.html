@@ -106,6 +106,9 @@
       function app() {
         return {
           open: false,
+          examples: {
+            'page about dolphins': 'a page about dolphins, with text and a few pictures'
+         },
           promptDraft:
             new URLSearchParams(window.location.search).get("prompt") ||
             "A simple page to compute the BMI (use SI units)",

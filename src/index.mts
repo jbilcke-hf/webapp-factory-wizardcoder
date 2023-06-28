@@ -1,12 +1,7 @@
-import { pipeline } from 'stream'
-import { promisify } from 'util'
-
 import express from 'express'
 import { HfInference } from '@huggingface/inference'
 
 import { daisy } from './daisy.mts'
-
-const pipe = promisify(pipeline)
 
 const hfi = new HfInference(process.env.HF_API_TOKEN)
 const hf = hfi.endpoint(process.env.HF_ENDPOINT_URL)
@@ -80,6 +75,7 @@ ${daisy}
 - Use a color scheme consistent with the brief and theme
 - To generate all your images, import from from this route: "/image?prompt=<description or caption of an image, photo or illustration>"
 - please be descriptive for the prompt, eg describe the scene in a few words (textures, characters, materials, camera type etc)
+- do not add more than 3 or 4 images
 - You must use Tailwind CSS and Daisy UI for the CSS classes, vanilla JS and Alpine.js for the JS.
 - All the JS code will be written directly inside the page, using <script type='text/javascript'>...</script>
 - You MUST use English, not Latin! (I repeat: do NOT write lorem ipsum!)
