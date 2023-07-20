@@ -91,8 +91,8 @@ Use a central layout to wrap everything in a <div class='flex flex-col items-cen
       parameters: {
         do_sample: true,
 
-        // hard limit for max_new_tokens is 1512
-        max_new_tokens: 1150,
+        // hard limit for max_new_tokens is now set to 2048
+        max_new_tokens: 1686,
         return_full_text: false,
       }
     })) {
